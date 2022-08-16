@@ -118,7 +118,14 @@ function App() {
                 placeholder="Min Alliance Members"
                 ref={allianceMemberMin}
             />
-
+            <h2>How to Use</h2>
+            <ol>
+                <li>Go to <a target="_blank" href="https://politicsandwar.com/data/nations/" rel="noreferrer">https://politicsandwar.com/data/nations/</a></li>
+                <li>Scroll to the bottom and click on the very last link/file to download it</li>
+                <li>Extract the zip folder onto your computer</li>
+                <li>Click "Choose File" above and find the csv file that was inside the zip folder--it should be titled something like <i>nations-2022-08-15.csv</i><br/>
+                    <u>note that the file ending in .zip will NOT work, it be the one ending in .csv</u></li>
+            </ol>
         </div>
     }
 
