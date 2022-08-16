@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import Spreadsheet from "./components/Spreadsheet";
-import { getGradientColor, onlyUnique, sum, tierRanges } from "./utils";
+import { onlyUnique, sum, tierRanges } from "./utils";
 import { ComparisonTieringChart, StackedTieringChart } from "./components/Graphs";
 
 
