@@ -73,7 +73,7 @@ function App() {
             skipEmptyLines:true,
             complete: function (results) {
                 const data = results.data;
-                const memberMin = parseInt(allianceMemberMin.current.value);
+                const memberMin = allianceMemberMin.current.value ? parseInt(allianceMemberMin.current.value) : 0;
                 const allianceNames = data
                     .map(nation => nation.alliance)
                     .filter(name => name !== "None")
@@ -110,7 +110,6 @@ function App() {
                 type="file"
                 name="file"
                 accept=".csv"
-                
                 onChange={fileUploaded}
             />
             <input
@@ -197,7 +196,6 @@ function App() {
                     return obj
                 })}
             />
-
             <input
                 type="text"
                 name="coalitionName"
@@ -241,6 +239,8 @@ function App() {
                     }
                 }}
             />
+            <h3>Drag and drop alliances to move them between coalitions</h3>
+
             <div style={{ display: "flex", justifyContent: "space-between"}}>
                 {coalitions.map((coalitionName, index) => {
                     return <Coalition
