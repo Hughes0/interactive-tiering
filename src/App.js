@@ -82,7 +82,7 @@ function App() {
                     .filter(allianceName => data
                         .filter(nation => nation.alliance === allianceName && parseInt(nation.alliance_position) >= 2).length > memberMin
                     )
-                setAllianceData(allianceNames.map(allianceName => {
+                let newAllianceData = allianceNames.map(allianceName => {
                     const members = data
                         .filter(nation => nation.alliance===allianceName)
                         .filter(nation => parseInt(nation.alliance_position) >= 2)
@@ -93,7 +93,9 @@ function App() {
                             .reduce((currentTotal, currentNation) => currentTotal + parseInt(currentNation.cities), 0),
                         cityDistribution: members.map(nation => nation.cities)
                     }
-                }))
+                })
+                newAllianceData.sort((a, b) => a.name.localeCompare(b.name));
+                setAllianceData(newAllianceData);
                 setIsFileUploaded(true)
             }
         });
@@ -183,6 +185,7 @@ function App() {
                             })
                             return obj
                         })}
+                        isPercent={false}
                     />
 
                     <StackedTieringChart
@@ -210,6 +213,7 @@ function App() {
                             })
                             return obj
                         })}
+                        isPercent={true}
                     />
                 </div>
                 <hr />

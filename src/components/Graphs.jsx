@@ -28,6 +28,21 @@ const CustomTooltip = ({ payload }) => {
     }
 }
 
+const CustomPercentTooltip = ({ payload }) => {
+    if (payload[0]) {
+        return (
+            <div>
+                City {payload[0].payload.name}
+                {payload.map((alliance) => {
+                    return <div key={alliance.name}>{alliance.name}: {Math.round(alliance.value * 100)}%</div>;
+                })}
+            </div>
+        );
+    } else {
+        return null;
+    }
+}
+
 const TieringChart = ({ cities }) => {
     const data = [];
     const max = cities.reduce((a, b) => Math.max(a, b));
@@ -64,7 +79,7 @@ const TieringChart = ({ cities }) => {
     )
 };
 
-const StackedTieringChart = ({ coalitions, data }) => {
+const StackedTieringChart = ({ coalitions, data, isPercent }) => {
     return (
         <div style={{width: "100%", height:300}}>
             <ResponsiveContainer>
@@ -83,7 +98,7 @@ const StackedTieringChart = ({ coalitions, data }) => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Legend />
-                    <Tooltip content={CustomTooltip} />
+                    <Tooltip content={isPercent ? CustomPercentTooltip : CustomTooltip} />
                     {coalitions.map((coalitionName, index) => {
                         return <Bar
                             dataKey={coalitionName}
