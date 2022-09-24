@@ -1,10 +1,10 @@
 import React from "react"
-import { getCitiesInRange, getGradientColor, maximum, sumAttr, tierRanges } from "../utils";
+import { getCitiesInRange, getColor, getGradientColor, maximum, sumAttr, tierRanges } from "../utils";
 
 
-function Row({coalition, maxTierSize}) {
+function Row({coalition, maxTierSize, index}) {
     return <tr>
-        <td>{coalition.name}</td>
+        <td style={{color: getColor(index)}}>{coalition.name}</td>
         <td>{coalition.totalNations}</td>
         <td>{coalition.totalCities}</td>
         {tierRanges.map(([minCities, maxCities], index) => {
@@ -57,8 +57,8 @@ function Spreadsheet({coalitions, allianceData}) {
                 </tr>
             </thead>
             <tbody>
-                {coalitionData.map(coalition => {
-                    return <Row key={coalition.name} coalition={coalition} maxTierSize={maxTierSize} />
+                {coalitionData.map((coalition, index) => {
+                    return <Row key={coalition.name} coalition={coalition} maxTierSize={maxTierSize} index={index}/>
                 })}
             </tbody>
         </table>

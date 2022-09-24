@@ -6,7 +6,8 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    Legend
+    Legend,
+    ResponsiveContainer
 } from "recharts";
 import { getColor, count } from '../utils';
 
@@ -37,55 +38,63 @@ const TieringChart = ({ cities }) => {
         });
     }
     return (
-        <BarChart
-            width={1000}
-            height={300}
-            data={data}
-            margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5
-            }}
-        >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Legend />
-            {/* @ts-ignore */}
-            <Tooltip content={CustomTooltip} />
-            <Bar dataKey="value" fill="#8884d8" />
-        </BarChart>
+        <div style={{width: "100%", height:300}}>
+            <ResponsiveContainer>
+                <BarChart
+                    width={1000}
+                    height={300}
+                    data={data}
+                    margin={{
+                        top: 5,
+                        right: 30,
+                        left: 20,
+                        bottom: 5
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Legend />
+                    {/* @ts-ignore */}
+                    <Tooltip content={CustomTooltip} />
+                    <Bar dataKey="value" fill="#8884d8" />
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
     )
 };
 
 const StackedTieringChart = ({ coalitions, data }) => {
     return (
-        <BarChart
-            width={1800}
-            height={300}
-            data={data}
-            margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5
-            }}
-        >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Legend />
-            <Tooltip content={CustomTooltip} />
-            {coalitions.map((coalitionName, index) => {
-                return <Bar
-                    dataKey={coalitionName}
-                    stackId="a"
-                    key={coalitionName}
-                    fill={getColor(index)}
-                />;
-            })}
-        </BarChart>
+        <div style={{width: "100%", height:300}}>
+            <ResponsiveContainer>
+                <BarChart
+                    width={1800}
+                    height={300}
+                    data={data}
+                    margin={{
+                        top: 5,
+                        right: 30,
+                        left: 20,
+                        bottom: 5
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Legend />
+                    <Tooltip content={CustomTooltip} />
+                    {coalitions.map((coalitionName, index) => {
+                        return <Bar
+                            dataKey={coalitionName}
+                            stackId="a"
+                            key={coalitionName}
+                            fill={getColor(index)}
+                        />;
+                    })}
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
     )
 };
 
@@ -95,31 +104,33 @@ const ComparisonTieringChart = ({
     data
 }) => {
     return (
-        <BarChart
-            width={1800}
-            height={300}
-            data={data}
-            margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5
-            }}
-        >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name"/>
-            <YAxis />
-            <Legend />
-            {/* @ts-ignore */}
-            <Tooltip content={CustomTooltip} />
-            {coalitions.map((coalitionName, index) => {
-                return <Bar
-                    dataKey={coalitionName}
-                    key={coalitionName}
-                    fill={getColor(index)}
-                />;
-            })}
-        </BarChart>
+        <div style={{width: "100%", height:300}}>
+            <ResponsiveContainer>
+                <BarChart
+                    data={data}
+                    margin={{
+                        top: 5,
+                        right: 30,
+                        left: 20,
+                        bottom: 5
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name"/>
+                    <YAxis />
+                    <Legend />
+                    {/* @ts-ignore */}
+                    <Tooltip content={CustomTooltip} />
+                    {coalitions.map((coalitionName, index) => {
+                        return <Bar
+                            dataKey={coalitionName}
+                            key={coalitionName}
+                            fill={getColor(index)}
+                        />;
+                    })}
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
     )
 };
 

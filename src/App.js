@@ -9,8 +9,6 @@ import { ComparisonTieringChart, StackedTieringChart } from "./components/Graphs
 
 
 
-
-
 function Alliance({alliance}) {
     const [{ isDragging }, dragRef] = useDrag({
         type: 'alliance',
@@ -19,7 +17,7 @@ function Alliance({alliance}) {
             isDragging: monitor.isDragging()
         })
     })
-    return <p ref={dragRef}>
+    return <p ref={dragRef} style={{fontStyle: isDragging ? "italic" : "normal"}}>
         {alliance.name}
     </p>
 }
@@ -30,7 +28,9 @@ function Coalition({coalitionName, allianceData, setAllianceData, selectedCoalit
         accept: 'alliance',
         drop: (allianceElement) => {
             allianceElement.coalition = coalitionName
-            setAllianceData([...allianceData.filter(allianceObj => allianceObj.name !== allianceElement.name), allianceElement]);
+            let newAllianceData = [...allianceData.filter(allianceObj => allianceObj.name !== allianceElement.name), allianceElement]
+            newAllianceData.sort((a, b) => a.name.localeCompare(b.name));
+            setAllianceData(newAllianceData);
         },
         collect: (monitor) => ({
             isOver: monitor.isOver()
@@ -38,26 +38,27 @@ function Coalition({coalitionName, allianceData, setAllianceData, selectedCoalit
     })
     const [checked, setChecked] = useState(true);
 
-    return <div ref={dropRef} style={{ flexGrow: "1" }}>
-        <ul>
-            <li><strong>{coalitionName}</strong> <input type="checkbox" checked={checked} onChange={e => {
-                if (checked === false) {
-                    setSelectedCoalitions([...selectedCoalitions, coalitionName])
-                    setChecked(!checked);
-                } else {
-                    if (selectedCoalitions.length > 1) {
-                        setSelectedCoalitions(selectedCoalitions.filter(name => name !== coalitionName))
+    return <div ref={dropRef} style={{ flexGrow: "1", border: "1px solid black", padding: "5px", backgroundColor: isOver ? "#D6D6D6" : "white" }}>
+            <h2>
+                {coalitionName}
+                <input type="checkbox" checked={checked} onChange={e => {
+                    if (checked === false) {
+                        setSelectedCoalitions([...selectedCoalitions, coalitionName])
                         setChecked(!checked);
                     } else {
-                        console.log("Must have at least one selected coalition")
+                        if (selectedCoalitions.length > 1) {
+                            setSelectedCoalitions(selectedCoalitions.filter(name => name !== coalitionName))
+                            setChecked(!checked);
+                        } else {
+                            console.log("Must have at least one selected coalition")
+                        }
                     }
-                }
-                
-            }}/></li>
+                    
+                }}/>
+            </h2>
             {allianceData.filter(alliance => alliance.coalition === coalitionName).map(alliance => {
                 return <Alliance alliance={alliance} key={alliance.name} />
             })}
-        </ul>
     </div>
 }
   
@@ -104,25 +105,39 @@ function App() {
     
     const allianceMemberMin = useRef(null);
 
+    const fileInput = (
+        <input
+            type="file"
+            name="file"
+            accept=".csv"
+            onChange={fileUploaded}
+        />
+    );
+
+    const [displayFileInput, setDisplayFileInput] = useState(false);
+    
     if (isFileUploaded === false) {
-        return <div style={{ display: "block", margin: "10px auto" }}>
-            <input
-                type="file"
-                name="file"
-                accept=".csv"
-                onChange={fileUploaded}
-            />
+        return <div style={{ display: "block", margin: "10px auto", padding: "5px" }}>
             <input
                 type="text"
                 placeholder="Min Alliance Members"
                 ref={allianceMemberMin}
+                onChange={e => {
+                    if (e.target.value !== "") {
+                        setDisplayFileInput(true);
+                    } else {
+                        setDisplayFileInput(false);
+                    }
+                }}
             />
+            {displayFileInput ? fileInput : <p>Please enter min alliance members</p>}
             <h2>How to Use</h2>
             <ol>
+                <li>Above, enter the minimum number of alliance members required for an alliance to be displayed</li>
                 <li>Go to <a target="_blank" href="https://politicsandwar.com/data/nations/" rel="noreferrer">https://politicsandwar.com/data/nations/</a></li>
                 <li>Scroll to the bottom and click on the very last link/file to download it</li>
                 <li>Extract the zip folder onto your computer</li>
-                <li>Click "Choose File" above and find the csv file that was inside the zip folder--it should be titled something like <i>nations-2022-08-15.csv</i><br/>
+                <li>Finally, click "Choose File" above and find the csv file that was inside the zip folder--it should be titled something like <i>nations-2022-08-15.csv</i><br/>
                     <u>note that the file ending in .zip will NOT work, it be the one ending in .csv</u></li>
             </ol>
         </div>
@@ -130,131 +145,139 @@ function App() {
 
 
     return (
-        <DndProvider backend={HTML5Backend}>
+        <div style={{padding: "5px"}}>
+            <DndProvider backend={HTML5Backend}>
 
-            <Spreadsheet allianceData={allianceData} coalitions={selectedCoalitions}/>
-
-            <ComparisonTieringChart
-                coalitions={selectedCoalitions}
-                data={tierRanges.map(([minCities, maxCities]) => {
-                    let obj = {
-                        name: `${minCities}-${maxCities}`
-                    }
-                    selectedCoalitions.map(coalitionName => {
-                        obj[coalitionName] = allianceData
-                            .filter(alliance => alliance.coalition === coalitionName)
-                            .map(alliance => alliance.cityDistribution)
-                            .flat()
-                            .filter(n => parseInt(n) >= minCities && parseInt(n) <= maxCities)
-                            .length;
-                    })
-                    return obj
-                })}
-            />
-
-            <StackedTieringChart
-                coalitions={selectedCoalitions}
-                data={tierRanges.map(([minCities, maxCities]) => {
-                    let obj = {
-                        name: `${minCities}-${maxCities}`
-                    }
-                    selectedCoalitions.map(coalitionName => {
-                        obj[coalitionName] = allianceData
-                            .filter(alliance => alliance.coalition === coalitionName)
-                            .map(alliance => alliance.cityDistribution)
-                            .flat()
-                            .filter(n => parseInt(n) >= minCities && parseInt(n) <= maxCities)
-                            .length;
-                    })
-                    return obj
-                })}
-            />
-
-            <StackedTieringChart
-                coalitions={selectedCoalitions}
-                data={tierRanges.map(([minCities, maxCities]) => {
-                    const totalSize = sum(selectedCoalitions.map(coalitionName => {
-                        return allianceData
-                            .filter(alliance => alliance.coalition === coalitionName)
-                            .map(alliance => alliance.cityDistribution)
-                            .flat()
-                            .filter(n => parseInt(n) >= minCities && parseInt(n) <= maxCities)
-                            .length;
-                    }))
-                    let obj = {
-                        name: `${minCities}-${maxCities}`
-                    }
-                    selectedCoalitions.map(coalitionName => {
-                        obj[coalitionName] = totalSize > 0 ? 
-                            allianceData
-                                .filter(alliance => alliance.coalition === coalitionName)
-                                .map(alliance => alliance.cityDistribution)
-                                .flat()
-                                .filter(n => parseInt(n) >= minCities && parseInt(n) <= maxCities).length / totalSize
-                            : 0;
-                    })
-                    return obj
-                })}
-            />
-            <input
-                type="text"
-                name="coalitionName"
-                id="coalitionName"
-                placeholder="Coalition Name"
-                ref={coalitionInputRef}
-            />
-            <input
-                type="button"
-                name="addCoalition"
-                id="addCoalition"
-                value="add"
-                onClick={e => {
-                    const name = coalitionInputRef.current.value;
-                    if (coalitions.filter(coalitionName => coalitionName === name).length===0 && name !== "") {
-                        setCoalitions([...coalitions, name])
-                        setSelectedCoalitions([...selectedCoalitions, name])
-                    } else {
-                        console.log("Err: invalid coalition name")
-                    }
-                    coalitionInputRef.current.value = "";
-                }}
-            />
-            <input
-                type="button"
-                name="removeCoalition"
-                id="removeCoalition"
-                value="remove"
-                onClick={e => {
-                    const name = coalitionInputRef.current.value;
-                    if (name !== "unsorted") {
-                        setAllianceData(allianceData.map(alliance => {
-                            if (alliance.coalition === name) {
-                                alliance.coalition = "unsorted"
+                <Spreadsheet allianceData={allianceData} coalitions={selectedCoalitions}/>
+                <div>
+                    <ComparisonTieringChart
+                        coalitions={selectedCoalitions}
+                        data={tierRanges.map(([minCities, maxCities]) => {
+                            let obj = {
+                                name: `${minCities}-${maxCities}`
                             }
-                            return alliance;
-                        }))
-                        setCoalitions(coalitions.filter(coalitionName => coalitionName !== name))
-                        setSelectedCoalitions(selectedCoalitions.filter(coalitionName => coalitionName !== name))
-                        coalitionInputRef.current.value = "";
-                    }
-                }}
-            />
-            <h3>Drag and drop alliances to move them between coalitions</h3>
-
-            <div style={{ display: "flex", justifyContent: "space-between"}}>
-                {coalitions.map((coalitionName, index) => {
-                    return <Coalition
-                        coalitionName={coalitionName}
-                        key={index}
-                        allianceData={allianceData}
-                        setAllianceData={setAllianceData}
-                        selectedCoalitions={selectedCoalitions}
-                        setSelectedCoalitions={setSelectedCoalitions}
+                            selectedCoalitions.map(coalitionName => {
+                                obj[coalitionName] = allianceData
+                                    .filter(alliance => alliance.coalition === coalitionName)
+                                    .map(alliance => alliance.cityDistribution)
+                                    .flat()
+                                    .filter(n => parseInt(n) >= minCities && parseInt(n) <= maxCities)
+                                    .length;
+                            })
+                            return obj
+                        })}
                     />
-                })}
-            </div>
-            
-        </DndProvider>
+                    <StackedTieringChart
+                        coalitions={selectedCoalitions}
+                        data={tierRanges.map(([minCities, maxCities]) => {
+                            let obj = {
+                                name: `${minCities}-${maxCities}`
+                            }
+                            selectedCoalitions.map(coalitionName => {
+                                obj[coalitionName] = allianceData
+                                    .filter(alliance => alliance.coalition === coalitionName)
+                                    .map(alliance => alliance.cityDistribution)
+                                    .flat()
+                                    .filter(n => parseInt(n) >= minCities && parseInt(n) <= maxCities)
+                                    .length;
+                            })
+                            return obj
+                        })}
+                    />
+
+                    <StackedTieringChart
+                        coalitions={selectedCoalitions}
+                        data={tierRanges.map(([minCities, maxCities]) => {
+                            const totalSize = sum(selectedCoalitions.map(coalitionName => {
+                                return allianceData
+                                    .filter(alliance => alliance.coalition === coalitionName)
+                                    .map(alliance => alliance.cityDistribution)
+                                    .flat()
+                                    .filter(n => parseInt(n) >= minCities && parseInt(n) <= maxCities)
+                                    .length;
+                            }))
+                            let obj = {
+                                name: `${minCities}-${maxCities}`
+                            }
+                            selectedCoalitions.map(coalitionName => {
+                                obj[coalitionName] = totalSize > 0 ? 
+                                    allianceData
+                                        .filter(alliance => alliance.coalition === coalitionName)
+                                        .map(alliance => alliance.cityDistribution)
+                                        .flat()
+                                        .filter(n => parseInt(n) >= minCities && parseInt(n) <= maxCities).length / totalSize
+                                    : 0;
+                            })
+                            return obj
+                        })}
+                    />
+                </div>
+                <hr />
+                <div style={{display: "flex", justifyContent: "center"}}>
+                    <input
+                        style={{fontSize: 18}}
+                        type="text"
+                        name="coalitionName"
+                        id="coalitionName"
+                        placeholder="Coalition Name"
+                        ref={coalitionInputRef}
+                    />
+                    <input
+                        style={{fontSize: 18}}
+                        type="button"
+                        name="addCoalition"
+                        id="addCoalition"
+                        value="add"
+                        onClick={e => {
+                            const name = coalitionInputRef.current.value;
+                            if (coalitions.filter(coalitionName => coalitionName === name).length===0 && name !== "") {
+                                setCoalitions([...coalitions, name])
+                                setSelectedCoalitions([...selectedCoalitions, name])
+                            } else {
+                                console.log("Err: invalid coalition name")
+                            }
+                            coalitionInputRef.current.value = "";
+                        }}
+                    />
+                    <input
+                        style={{fontSize: 18}}
+                        type="button"
+                        name="removeCoalition"
+                        id="removeCoalition"
+                        value="remove"
+                        onClick={e => {
+                            const name = coalitionInputRef.current.value;
+                            if (name !== "unsorted") {
+                                setAllianceData(allianceData.map(alliance => {
+                                    if (alliance.coalition === name) {
+                                        alliance.coalition = "unsorted"
+                                    }
+                                    return alliance;
+                                }))
+                                setCoalitions(coalitions.filter(coalitionName => coalitionName !== name))
+                                setSelectedCoalitions(selectedCoalitions.filter(coalitionName => coalitionName !== name))
+                                coalitionInputRef.current.value = "";
+                            }
+                        }}
+                    />
+                </div>
+                <h3 style={{textAlign: "center"}}>Drag and drop alliances to move them between coalitions</h3>
+
+                <div style={{ display: "flex", justifyContent: "space-between"}}>
+                    {coalitions.map((coalitionName, index) => {
+                        return <Coalition
+                            coalitionName={coalitionName}
+                            key={index}
+                            allianceData={allianceData}
+                            setAllianceData={setAllianceData}
+                            selectedCoalitions={selectedCoalitions}
+                            setSelectedCoalitions={setSelectedCoalitions}
+                        />
+                    })}
+                </div>
+                
+            </DndProvider>
+        </div>
     );
 }
 
